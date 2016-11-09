@@ -3,3 +3,7 @@
 *.iml
 build
 .DS_Store
+/bin/
+.project
+*.launch
+.externalToolBuilders/
