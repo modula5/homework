@@ -1,5 +1,6 @@
 package io.fourfinanceit.service;
 
+import static com.google.common.base.MoreObjects.firstNonNull;
 import static com.google.common.base.Preconditions.checkArgument;
 import static io.fourfinanceit.util.Utils.amount;
 import static io.fourfinanceit.util.Utils.calculateMonthlyPayment;
@@ -10,6 +11,7 @@ import static java.util.stream.Collectors.toList;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.time.LocalDateTime;
 import java.util.List;
 
 import javax.annotation.PostConstruct;
@@ -31,6 +33,7 @@ import io.fourfinanceit.domain.Client;
 import io.fourfinanceit.domain.Loan;
 import io.fourfinanceit.domain.LoanApplication;
 import io.fourfinanceit.domain.LoanExtension;
+import io.fourfinanceit.enums.LoanStatus;
 import io.fourfinanceit.repository.EntityRepository;
 import io.fourfinanceit.repository.LoanRepository;
 import io.fourfinanceit.util.Constants;
@@ -60,7 +63,7 @@ public class LoanService {
 	public void init() {
 		maxAmount = amount(environment.getProperty("loan.max.amount"));
 		interestPerMonth = amount(environment.getProperty("loan.interest.month"));
-		extensionInterestPerMonth = amount(environment.getProperty("loan.extension.month"));
+		extensionInterestPerMonth = amount(environment.getProperty("loan.extension.interest.month"));
 	}
 	@Transactional
 	public LoanApplicationBean apply(ApplyForLoanBean applyForLoanBean) {
@@ -69,13 +72,13 @@ public class LoanService {
 		checkArgument(!client.hasOpenLoans(), "Client has already one open loan");
 		checkArgument(isLe(applyForLoanBean.getAmount(), maxAmount),
 				"Attempt to take %s with max amount permitted %s", applyForLoanBean.getAmount(), maxAmount);
-		checkArgument(!client.hasOpenApplications(), "Application must be closed before new one becomes available");
 		
 		LoanApplication loanApplication = new LoanApplication();
 		BeanUtils.copyProperties(applyForLoanBean, loanApplication);
 		loanApplication.setClient(client);
 		
-		boolean evaluateSuccess = riskService.evaluate(applyForLoanBean, loanApplication);
+		LocalDateTime when = firstNonNull(applyForLoanBean.getWhen(), LocalDateTime.now());
+		boolean evaluateSuccess = riskService.evaluate(when, applyForLoanBean, loanApplication);
 		if (evaluateSuccess) {
 			createLoan(applyForLoanBean, client);
 			loanApplication.approve();	
@@ -95,6 +98,14 @@ public class LoanService {
 		loan.setDueDate(now().plusMonths(applyForLoanBean.getTerm()));
 		loan.setClient(client);
 		entityRepository.persist(loan);
+	}
+	
+	@Transactional
+	public void payLoan(Long clientId) {
+		Client client = entityRepository.get(clientId, Client.class);
+		Loan lastOpenLoan = loanRepository.getLastOpenLoan(client);	
+		checkArgument(lastOpenLoan != null, "Client does not have any open loan at the moment");
+		lastOpenLoan.setStatus(LoanStatus.PAID);
 	}
 	
 	@Transactional

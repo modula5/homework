@@ -2,6 +2,7 @@ package io.fourfinanceit.service;
 
 import static com.google.common.collect.Lists.newArrayList;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -18,9 +19,9 @@ public class RiskService {
 	@Autowired
 	private List<RiskRule> riskRules = newArrayList();
 	
-	public boolean evaluate(ApplyForLoanBean applyForLoanBean, LoanApplication loanApplication) {
+	public boolean evaluate(LocalDateTime when, ApplyForLoanBean applyForLoanBean, LoanApplication loanApplication) {
 		riskRules.forEach(riskRule -> {
-			riskRule.apply(applyForLoanBean, loanApplication);
+			riskRule.apply(when, applyForLoanBean, loanApplication);
 		});
 		return loanApplication.getResolution() != LoanApplicationResolution.MANUAL;
 	}

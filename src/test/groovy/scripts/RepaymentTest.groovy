@@ -4,7 +4,7 @@ import io.fourfinanceit.util.Utils
 import spock.lang.Specification
 import spock.lang.Unroll
 
-class HomeworkTests extends Specification {
+class RepaymentTest extends Specification {
 
 	@Unroll("Where loan amount : #loanAmount, term in month : #termInMonths, monthly rate : #monthlyRate")
 	def "Monthly payment calculation"() {
@@ -14,10 +14,10 @@ class HomeworkTests extends Specification {
 		Utils.calculateMonthlyPayment(loanAmount, termInMonths, monthlyRate) == result
 		where:
 		loanAmount | termInMonths | monthlyRate | result
-		500 		| 12		  | 30			| 156.73
-		300 		| 12		  | 30			| 94.04
-		100 		| 12		  | 30			| 31.35
-		500 		| 6		  		| 30			| 189.20
-		500 		| 3		 		 | 30			| 275.31
+		500 		| 12		  | 2.5			| 50.23
+		300 		| 12		  | 2.5				| 30.14
+		100 		| 12		  | 2.5				| 10.05
+		500 		| 6		  		| 2.5			| 92.30
+		500 		| 3		 		 | 2.5			| 176.77
 	}
    }

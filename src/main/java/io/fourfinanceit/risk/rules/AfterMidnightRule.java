@@ -4,7 +4,6 @@ import static io.fourfinanceit.util.Utils.amount;
 import static io.fourfinanceit.util.Utils.isE;
 
 import java.math.BigDecimal;
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 
@@ -31,14 +30,13 @@ public class AfterMidnightRule implements RiskRule {
 	}
 
 	@Override
-	public void apply(ApplyForLoanBean applyForLoanBean, LoanApplication loanApplication) {
-		LocalDateTime midnight = LocalDateTime.of(LocalDate.now(), LocalTime.MIDNIGHT);
+	public void apply(LocalDateTime when, ApplyForLoanBean applyForLoanBean, LoanApplication loanApplication) {
+		LocalDateTime midnight = LocalDateTime.of(when.toLocalDate(), LocalTime.MIDNIGHT);
 		LocalDateTime midnightPlus8Hours = midnight.plusHours(7);
-		LocalDateTime now = LocalDateTime.now();
-		
+
 		if (isE(applyForLoanBean.getAmount(), maxAmount)
-				&& now.isAfter(midnight) && now.isBefore(midnightPlus8Hours)) {
-			loanApplication.manual("The attempt to take loan is made after 00:00 with max possible amount.");
+				&& when.isAfter(midnight) && when.isBefore(midnightPlus8Hours)) {
+			loanApplication.manual("The attempt to take loan is made after 00:00 with max possible amount");
 		}		
 
 	}

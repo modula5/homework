@@ -50,8 +50,12 @@ public class LoanController {
 		return loanService.list((Long) httpSession.getAttribute("cid"));
 	}
 	
+	@RequestMapping(value = "/pay", method = RequestMethod.POST)
+	public void pay() {
+		loanService.payLoan((Long) httpSession.getAttribute("cid"));
+	}
+	
 	@RequestMapping(value = "/last_open", method = RequestMethod.GET)
-	@Transactional
 	public LoanBean lastOpen() {
 		return loanService.lastOpenLoan((Long) httpSession.getAttribute("cid"));
 	}

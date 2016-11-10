@@ -55,7 +55,7 @@ dependencies {
    
   compile 'org.slf4j:jcl-over-slf4j:1.7.5'
   compile 'org.slf4j:log4j-over-slf4j:1.7.5'
-  compile group: 'org.apache.commons', name: 'commons-lang3', version: '3.0'
+  testCompile group: 'org.apache.httpcomponents', name: 'httpclient', version: '4.5.2'
   
   testCompile "org.spockframework:spock-core:1.0-groovy-2.4"
 
