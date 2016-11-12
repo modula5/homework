@@ -80,7 +80,7 @@ public class LoanService {
 		LocalDateTime when = firstNonNull(applyForLoanBean.getWhen(), LocalDateTime.now());
 		boolean evaluateSuccess = riskService.evaluate(when, applyForLoanBean, loanApplication);
 		if (evaluateSuccess) {
-			createLoan(applyForLoanBean, client);
+			createLoan(applyForLoanBean, client, loanApplication);
 			loanApplication.approve();	
 			LOGGER.info("Loan has been successfully approved");
 		} else {
@@ -90,13 +90,14 @@ public class LoanService {
 		entityRepository.persist(loanApplication);
 		return loanApplication.toBean();
 	}
-	private void createLoan(ApplyForLoanBean applyForLoanBean, Client client) {
+	private void createLoan(ApplyForLoanBean applyForLoanBean, Client client, LoanApplication loanApplication) {
 		Loan loan = new Loan();
 		loan.setPrincipal(applyForLoanBean.getAmount());
 		loan.setInterest(interestPerMonth);
 		loan.setMonthlyPayment(calculateMonthlyPayment(applyForLoanBean.getAmount(), applyForLoanBean.getTerm(), interestPerMonth));
 		loan.setDueDate(now().plusMonths(applyForLoanBean.getTerm()));
 		loan.setClient(client);
+		loan.setLoanApplication(loanApplication);
 		entityRepository.persist(loan);
 	}
 	

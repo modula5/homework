@@ -7,7 +7,6 @@ import static java.util.stream.Collectors.toList;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
-import java.util.stream.Collectors;
 
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
@@ -18,6 +17,7 @@ import javax.persistence.FetchType;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
+import javax.persistence.OneToOne;
 import javax.persistence.Table;
 
 import org.springframework.beans.BeanUtils;
@@ -51,9 +51,12 @@ public class Loan extends BaseEntity {
 	@OneToMany(fetch = FetchType.LAZY, mappedBy = "loan", cascade = CascadeType.ALL)
 	private List<LoanExtension> loanExtensions = newArrayList();
 	
-	@ManyToOne
+	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name="client", nullable=false)
 	private Client client;
+	
+	@OneToOne(optional = true, fetch = FetchType.LAZY)
+	private LoanApplication loanApplication;
 	
 	public void setClient(Client client) {
 		this.client = client;
@@ -104,10 +107,19 @@ public class Loan extends BaseEntity {
 		return extensionPayment;
 	}
 	
+	public void setLoanApplication(LoanApplication loanApplication) {
+		this.loanApplication = loanApplication;
+	}
+	
+	public LoanApplication getLoanApplication() {
+		return loanApplication;
+	}
+	
 	public LoanBean toBean() {
 		LoanBean loanBean = new LoanBean();
 		BeanUtils.copyProperties(this, loanBean, "loanExtensions");
 		loanBean.getLoanExtensions().addAll(getLoanExtensions().stream().map(LoanExtension::toBean).collect(toList()));
+		loanBean.setLoanApplicationBean(getLoanApplication().toBean());
 		return loanBean;
 	}
 }

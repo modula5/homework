@@ -11,9 +11,11 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.ExpectedException;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.client.HttpServerErrorException;
+import org.springframework.web.client.RestClientException;
 
 import io.fourfinanceit.api.ClientApi;
 import io.fourfinanceit.api.LoanApi;
@@ -34,6 +36,9 @@ public class LoanTests extends BaseIntegrationTest {
 	
 	@Autowired
 	private LoanApi loanApi;
+	
+	@Rule
+	public ExpectedException expectedEx = ExpectedException.none();
 	
 	@Test
 	public void registerClient() {
@@ -77,8 +82,11 @@ public class LoanTests extends BaseIntegrationTest {
 		assertThat(loans.get(0).getMonthlyPayment(), is(amount("30.14")));
 	}
 	
-	@Test(expected = HttpServerErrorException.class)
+	@Test
 	public void applyForLoanMoreThanMax() {
+		expectedEx.expect(RestClientException.class);
+		expectedEx.expectMessage("Attempt to take 700.00 with max amount permitted 500.00");
+		
 		ClientRegisterBean clientRegisterBean = new ClientRegisterBean();
 		clientRegisterBean.setLogin("modula5");
 		clientRegisterBean.setPassword("test12345");
@@ -90,8 +98,11 @@ public class LoanTests extends BaseIntegrationTest {
 		loanApi.applyForLoan(applyForLoanBean);
 	}
 	
-	@Test(expected = HttpServerErrorException.class)
+	@Test
 	public void applyForLoanSecondTime() {
+		expectedEx.expect(RestClientException.class);
+		expectedEx.expectMessage("Client has already one open loan");
+		
 		ClientRegisterBean clientRegisterBean = new ClientRegisterBean();
 		clientRegisterBean.setLogin("modula5");
 		clientRegisterBean.setPassword("test12345");

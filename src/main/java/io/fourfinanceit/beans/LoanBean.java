@@ -24,6 +24,8 @@ public class LoanBean extends BaseBean {
 	
 	private LoanStatus status;
 	
+	private LoanApplicationBean loanApplicationBean;
+	
 	private List<LoanExtensionBean> loanExtensions = newArrayList();
 	
 	public void setId(Long id) {
@@ -88,6 +90,14 @@ public class LoanBean extends BaseBean {
 
 	public void setLoanExtensions(List<LoanExtensionBean> loanExtensions) {
 		this.loanExtensions = loanExtensions;
+	}
+	
+	public void setLoanApplicationBean(LoanApplicationBean loanApplicationBean) {
+		this.loanApplicationBean = loanApplicationBean;
+	}
+	
+	public LoanApplicationBean getLoanApplicationBean() {
+		return loanApplicationBean;
 	}
 	
 }
