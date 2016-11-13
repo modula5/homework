@@ -1,5 +1,8 @@
 package io.fourfinanceit.rest;
 
+import static io.fourfinanceit.util.Constants.CLIENT_SESSION_ID;
+import static io.fourfinanceit.util.Utils.getRemoteAddress;
+
 import java.util.List;
 
 import javax.servlet.http.HttpServletRequest;
@@ -25,39 +28,33 @@ public class LoanController {
 
 	@Autowired private LoanService loanService;
 	
-	@Autowired(required = false)
-	private HttpSession httpSession;
-	
-	@Autowired(required = false)
-	private HttpServletRequest request;
-	
 	@RequestMapping(value = "/apply", method = RequestMethod.POST, consumes="application/json")
-	public LoanApplicationBean apply(@RequestBody ApplyForLoanBean applyForLoanBean) {
-		applyForLoanBean.setClientId((Long) httpSession.getAttribute("cid"));
-		applyForLoanBean.setAddress(request.getRemoteAddr());
+	public LoanApplicationBean apply(@RequestBody ApplyForLoanBean applyForLoanBean, HttpServletRequest request, HttpSession httpSession) {
+		applyForLoanBean.setClientId((Long) httpSession.getAttribute(CLIENT_SESSION_ID));
+		applyForLoanBean.setAddress(getRemoteAddress(request));
 		return loanService.apply(applyForLoanBean);
 	}
 	
 	@RequestMapping(value = "/extension", method = RequestMethod.POST, consumes="application/json")
-	public LoanExtensionBean createExtension(@RequestBody CreateExtensionBean createExtensionBean) {
-		createExtensionBean.setClientId((Long) httpSession.getAttribute("cid"));
+	public LoanExtensionBean createExtension(@RequestBody CreateExtensionBean createExtensionBean, HttpSession httpSession) {
+		createExtensionBean.setClientId((Long) httpSession.getAttribute(CLIENT_SESSION_ID));
 		return loanService.createExtension(createExtensionBean);
 	}
 	
 	@RequestMapping(value = "/list", method = RequestMethod.GET)
 	@Transactional
-	public List<LoanBean> list() {
-		return loanService.list((Long) httpSession.getAttribute("cid"));
+	public List<LoanBean> list(HttpSession httpSession) {
+		return loanService.list((Long) httpSession.getAttribute(CLIENT_SESSION_ID));
 	}
 	
 	@RequestMapping(value = "/pay", method = RequestMethod.POST)
-	public void pay() {
-		loanService.payLoan((Long) httpSession.getAttribute("cid"));
+	public void pay(HttpSession httpSession) {
+		loanService.payLoan((Long) httpSession.getAttribute(CLIENT_SESSION_ID));
 	}
 	
 	@RequestMapping(value = "/last_open", method = RequestMethod.GET)
-	public LoanBean lastOpen() {
-		return loanService.lastOpenLoan((Long) httpSession.getAttribute("cid"));
+	public LoanBean lastOpen(HttpSession httpSession) {
+		return loanService.lastOpenLoan((Long) httpSession.getAttribute(CLIENT_SESSION_ID));
 	}
 
 }

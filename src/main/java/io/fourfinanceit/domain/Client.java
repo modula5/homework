@@ -1,6 +1,7 @@
 package io.fourfinanceit.domain;
 
 
+import static com.google.common.collect.ImmutableList.copyOf;
 import static com.google.common.collect.Lists.newArrayList;
 
 import java.util.List;
@@ -47,7 +48,7 @@ public class Client extends BaseEntity {
 	}
 
 	public List<LoanApplication> getLoanApplications() {
-		return loanApplications;
+		return copyOf(loanApplications);
 	}
 
 	public void setLoanApplications(List<LoanApplication> loanApplications) {
@@ -55,7 +56,7 @@ public class Client extends BaseEntity {
 	}
 
 	public List<Loan> getLoans() {
-		return loans;
+		return copyOf(loans);
 	}
 
 	public void setLoans(List<Loan> loans) {

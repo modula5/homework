@@ -18,6 +18,8 @@ public class LoanBean extends BaseBean {
 	
 	private BigDecimal monthlyPayment;
 	
+	private BigDecimal totalPayment;
+	
 	private BigDecimal extensionPayment;
 	
 	private LocalDate dueDate;
@@ -98,6 +100,14 @@ public class LoanBean extends BaseBean {
 	
 	public LoanApplicationBean getLoanApplicationBean() {
 		return loanApplicationBean;
+	}
+	
+	public void setTotalPayment(BigDecimal totalPayment) {
+		this.totalPayment = totalPayment;
+	}
+	
+	public BigDecimal getTotalPayment() {
+		return totalPayment;
 	}
 	
 }

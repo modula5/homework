@@ -14,10 +14,10 @@ class RepaymentTest extends Specification {
 		Utils.calculateMonthlyPayment(loanAmount, termInMonths, monthlyRate) == result
 		where:
 		loanAmount | termInMonths | monthlyRate | result
-		500 		| 12		  | 2.5			| 50.23
-		300 		| 12		  | 2.5				| 30.14
-		100 		| 12		  | 2.5				| 10.05
-		500 		| 6		  		| 2.5			| 92.30
-		500 		| 3		 		 | 2.5			| 176.77
+		500 		| 12		  | 2.5			| 48.74
+		300 		| 12		  | 2.5				| 29.25
+		100 		| 12		  | 2.5				| 9.75
+		500 		| 6		  		| 2.5			| 90.77
+		500 		| 3		 		 | 2.5			| 175.07
 	}
    }

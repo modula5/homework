@@ -31,6 +31,10 @@ import io.fourfinanceit.enums.LoanApplicationStatus;
 
 public class LoanTests extends BaseIntegrationTest {
 
+	private static final String PASSWORD = "test12345";
+
+	private static final String LOGIN = "modula5";
+
 	@Autowired
 	private ClientApi clientApi;
 	
@@ -43,29 +47,29 @@ public class LoanTests extends BaseIntegrationTest {
 	@Test
 	public void registerClient() {
 		ClientRegisterBean clientRegisterBean = new ClientRegisterBean();
-		clientRegisterBean.setLogin("modula5");
-		clientRegisterBean.setPassword("test12345");
+		clientRegisterBean.setLogin(LOGIN);
+		clientRegisterBean.setPassword(PASSWORD);
 		clientApi.register(clientRegisterBean);
 	}
 	
 	@Test
 	public void registerClientThenLogin() {
 		ClientRegisterBean clientRegisterBean = new ClientRegisterBean();
-		clientRegisterBean.setLogin("modula5");
-		clientRegisterBean.setPassword("test12345");
+		clientRegisterBean.setLogin(LOGIN);
+		clientRegisterBean.setPassword(PASSWORD);
 		clientApi.register(clientRegisterBean);
 		
 		ClientLoginBean clientLoginBean = new ClientLoginBean();
-		clientLoginBean.setLogin("modula5");
-		clientLoginBean.setPassword("test12345");
+		clientLoginBean.setLogin(LOGIN);
+		clientLoginBean.setPassword(PASSWORD);
 		clientApi.login(clientLoginBean);
 	}
 	
 	@Test
 	public void applyForLoan() {
 		ClientRegisterBean clientRegisterBean = new ClientRegisterBean();
-		clientRegisterBean.setLogin("modula5");
-		clientRegisterBean.setPassword("test12345");
+		clientRegisterBean.setLogin(LOGIN);
+		clientRegisterBean.setPassword(PASSWORD);
 		clientApi.register(clientRegisterBean);
 
 		ApplyForLoanBean applyForLoanBean = new ApplyForLoanBean();
@@ -79,7 +83,7 @@ public class LoanTests extends BaseIntegrationTest {
 		assertThat(loans, hasSize(1));
 		assertThat(loans.get(0).getDueDate(), is(LocalDate.now().plusMonths(12)));
 		assertThat(loans.get(0).getPrincipal(), is(amount("300")));
-		assertThat(loans.get(0).getMonthlyPayment(), is(amount("30.14")));
+		assertThat(loans.get(0).getMonthlyPayment(), is(amount("29.25")));
 	}
 	
 	@Test
@@ -88,8 +92,8 @@ public class LoanTests extends BaseIntegrationTest {
 		expectedEx.expectMessage("Attempt to take 700.00 with max amount permitted 500.00");
 		
 		ClientRegisterBean clientRegisterBean = new ClientRegisterBean();
-		clientRegisterBean.setLogin("modula5");
-		clientRegisterBean.setPassword("test12345");
+		clientRegisterBean.setLogin(LOGIN);
+		clientRegisterBean.setPassword(PASSWORD);
 		clientApi.register(clientRegisterBean);
 
 		ApplyForLoanBean applyForLoanBean = new ApplyForLoanBean();
@@ -104,8 +108,8 @@ public class LoanTests extends BaseIntegrationTest {
 		expectedEx.expectMessage("Client has already one open loan");
 		
 		ClientRegisterBean clientRegisterBean = new ClientRegisterBean();
-		clientRegisterBean.setLogin("modula5");
-		clientRegisterBean.setPassword("test12345");
+		clientRegisterBean.setLogin(LOGIN);
+		clientRegisterBean.setPassword(PASSWORD);
 		clientApi.register(clientRegisterBean);
 
 		ApplyForLoanBean applyForLoanBean = new ApplyForLoanBean();
@@ -119,7 +123,7 @@ public class LoanTests extends BaseIntegrationTest {
 		assertThat(loans, hasSize(1));
 		assertThat(loans.get(0).getDueDate(), is(LocalDate.now().plusMonths(12)));
 		assertThat(loans.get(0).getPrincipal(), is(amount("300")));
-		assertThat(loans.get(0).getMonthlyPayment(), is(amount("30.14")));
+		assertThat(loans.get(0).getMonthlyPayment(), is(amount("29.25")));
 		
 		loanApplication = loanApi.applyForLoan(applyForLoanBean);
 	}
@@ -127,8 +131,8 @@ public class LoanTests extends BaseIntegrationTest {
 	@Test
 	public void applyForLoanMoreThan3TimesInARow() {
 		ClientRegisterBean clientRegisterBean = new ClientRegisterBean();
-		clientRegisterBean.setLogin("modula5");
-		clientRegisterBean.setPassword("test12345");
+		clientRegisterBean.setLogin(LOGIN);
+		clientRegisterBean.setPassword(PASSWORD);
 		clientApi.register(clientRegisterBean);
 
 		ApplyForLoanBean applyForLoanBean = new ApplyForLoanBean();
@@ -158,8 +162,8 @@ public class LoanTests extends BaseIntegrationTest {
 	@Test
 	public void applyForLoanAfterMidnightWithMaximumAmountAvailable() {
 		ClientRegisterBean clientRegisterBean = new ClientRegisterBean();
-		clientRegisterBean.setLogin("modula5");
-		clientRegisterBean.setPassword("test12345");
+		clientRegisterBean.setLogin(LOGIN);
+		clientRegisterBean.setPassword(PASSWORD);
 		clientApi.register(clientRegisterBean);
 
 		ApplyForLoanBean applyForLoanBean = new ApplyForLoanBean();
@@ -175,8 +179,8 @@ public class LoanTests extends BaseIntegrationTest {
 	@Test
 	public void applyForLoanAndCreateExtension2Extensions() {
 		ClientRegisterBean clientRegisterBean = new ClientRegisterBean();
-		clientRegisterBean.setLogin("modula5");
-		clientRegisterBean.setPassword("test12345");
+		clientRegisterBean.setLogin(LOGIN);
+		clientRegisterBean.setPassword(PASSWORD);
 		clientApi.register(clientRegisterBean);
 		
 		ApplyForLoanBean applyForLoanBean = new ApplyForLoanBean();
@@ -190,7 +194,7 @@ public class LoanTests extends BaseIntegrationTest {
 		assertThat(loans, hasSize(1));
 		assertThat(loans.get(0).getDueDate(), is(LocalDate.now().plusMonths(12)));
 		assertThat(loans.get(0).getPrincipal(), is(amount("300")));
-		assertThat(loans.get(0).getMonthlyPayment(), is(amount("30.14")));
+		assertThat(loans.get(0).getMonthlyPayment(), is(amount("29.25")));
 		
 		CreateExtensionBean createExtensionBean = new CreateExtensionBean();
 		createExtensionBean.setTerm(2);

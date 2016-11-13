@@ -12,9 +12,9 @@ import org.springframework.web.servlet.config.annotation.EnableWebMvc;
 @ComponentScan("io.fourfinanceit")
 @EnableWebMvc
 @EnableTransactionManagement
-public class HomeworkApplication {
+public class LoanApplication {
 
     public static void main(String[] args) {
-        SpringApplication.run(HomeworkApplication.class, args);
+        SpringApplication.run(LoanApplication.class, args);
     }
 }

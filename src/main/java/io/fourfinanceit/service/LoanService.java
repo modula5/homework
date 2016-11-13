@@ -2,7 +2,6 @@ package io.fourfinanceit.service;
 
 import static com.google.common.base.MoreObjects.firstNonNull;
 import static com.google.common.base.Preconditions.checkArgument;
-import static io.fourfinanceit.util.Utils.amount;
 import static io.fourfinanceit.util.Utils.calculateMonthlyPayment;
 import static io.fourfinanceit.util.Utils.isLe;
 import static java.time.LocalDate.now;
@@ -10,17 +9,14 @@ import static java.util.Optional.ofNullable;
 import static java.util.stream.Collectors.toList;
 
 import java.math.BigDecimal;
-import java.math.RoundingMode;
 import java.time.LocalDateTime;
 import java.util.List;
-
-import javax.annotation.PostConstruct;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.core.env.Environment;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -36,7 +32,7 @@ import io.fourfinanceit.domain.LoanExtension;
 import io.fourfinanceit.enums.LoanStatus;
 import io.fourfinanceit.repository.EntityRepository;
 import io.fourfinanceit.repository.LoanRepository;
-import io.fourfinanceit.util.Constants;
+import io.fourfinanceit.util.Utils;
 
 @Service
 public class LoanService {
@@ -50,21 +46,15 @@ public class LoanService {
 	@Autowired
 	private EntityRepository entityRepository;
 
-	@Autowired
-	private Environment environment;
-	
+	@Value("#{T(io.fourfinanceit.util.Utils).amount('${loan.max.amount}')}")
 	private BigDecimal maxAmount;
+	@Value("#{T(io.fourfinanceit.util.Utils).amount('${loan.interest.month}')}")
 	private BigDecimal interestPerMonth;
+	@Value("#{T(io.fourfinanceit.util.Utils).amount('${loan.extension.interest.month}')}")
 	private BigDecimal extensionInterestPerMonth;
 	
 	private static final Logger LOGGER  = LoggerFactory.getLogger(LoanService.class);
-	
-	@PostConstruct
-	public void init() {
-		maxAmount = amount(environment.getProperty("loan.max.amount"));
-		interestPerMonth = amount(environment.getProperty("loan.interest.month"));
-		extensionInterestPerMonth = amount(environment.getProperty("loan.extension.interest.month"));
-	}
+
 	@Transactional
 	public LoanApplicationBean apply(ApplyForLoanBean applyForLoanBean) {
 		Client client = entityRepository.get(applyForLoanBean.getClientId(), Client.class);
@@ -95,6 +85,7 @@ public class LoanService {
 		loan.setPrincipal(applyForLoanBean.getAmount());
 		loan.setInterest(interestPerMonth);
 		loan.setMonthlyPayment(calculateMonthlyPayment(applyForLoanBean.getAmount(), applyForLoanBean.getTerm(), interestPerMonth));
+		loan.setTotalPayment(loan.getMonthlyPayment().multiply(BigDecimal.valueOf(applyForLoanBean.getTerm())));
 		loan.setDueDate(now().plusMonths(applyForLoanBean.getTerm()));
 		loan.setClient(client);
 		loan.setLoanApplication(loanApplication);
@@ -116,8 +107,8 @@ public class LoanService {
 		if (lastOpenLoan == null) {
 			throw new IllegalStateException("Client does not have any open loans at the moment to be able to do extensions");
 		}
-		BigDecimal extensionPayment = lastOpenLoan.getPrincipal().multiply(extensionInterestPerMonth).divide(Constants.ONE_HUNDRED, 2, RoundingMode.HALF_UP).multiply(BigDecimal.valueOf(createExtensionBean.getTerm()));
-		lastOpenLoan.setExtensionPayment(lastOpenLoan.getExtensionPayment() != null ? lastOpenLoan.getExtensionPayment().add(extensionPayment) : extensionPayment);
+		BigDecimal extensionPayment = Utils.percentValueOf(lastOpenLoan.getPrincipal(), extensionInterestPerMonth.multiply(BigDecimal.valueOf(createExtensionBean.getTerm())));
+		lastOpenLoan.setExtensionPayment(Utils.amount(lastOpenLoan.getExtensionPayment() != null ? lastOpenLoan.getExtensionPayment().add(extensionPayment) : extensionPayment));
 		LoanExtension loanExtension = new LoanExtension();
 		loanExtension.setLoan(lastOpenLoan);
 		loanExtension.setTerm(createExtensionBean.getTerm());

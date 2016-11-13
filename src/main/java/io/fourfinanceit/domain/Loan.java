@@ -38,6 +38,9 @@ public class Loan extends BaseEntity {
 	@Column(name = "monthly_payment", nullable = false, precision = 10, scale = 2)
 	private BigDecimal monthlyPayment;
 	
+	@Column(name = "total_payment", nullable = false, precision = 10, scale = 2)
+	private BigDecimal totalPayment;
+	
 	@Column(name = "extension_payment")
 	private BigDecimal extensionPayment;
 	
@@ -48,7 +51,7 @@ public class Loan extends BaseEntity {
 	@Enumerated(EnumType.STRING)
 	private LoanStatus status = OPEN;
 	
-	@OneToMany(fetch = FetchType.LAZY, mappedBy = "loan", cascade = CascadeType.ALL)
+	@OneToMany(fetch = FetchType.LAZY, mappedBy = "loan", cascade = CascadeType.ALL, orphanRemoval = true)
 	private List<LoanExtension> loanExtensions = newArrayList();
 	
 	@ManyToOne(fetch = FetchType.LAZY)
@@ -113,6 +116,12 @@ public class Loan extends BaseEntity {
 	
 	public LoanApplication getLoanApplication() {
 		return loanApplication;
+	}
+	public void setTotalPayment(BigDecimal totalPayment) {
+		this.totalPayment = totalPayment;
+	}
+	public BigDecimal getTotalPayment() {
+		return totalPayment;
 	}
 	
 	public LoanBean toBean() {
