@@ -2,6 +2,7 @@ package io.fourfinanceit;
 
 import static io.fourfinanceit.util.Utils.amount;
 import static java.util.Comparator.comparing;
+import static java.util.stream.Collectors.joining;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertThat;
@@ -10,6 +11,7 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.stream.Stream;
 
 import org.junit.Rule;
 import org.junit.Test;
@@ -20,7 +22,6 @@ import org.springframework.web.client.RestClientException;
 import io.fourfinanceit.api.ClientApi;
 import io.fourfinanceit.api.LoanApi;
 import io.fourfinanceit.beans.ApplyForLoanBean;
-import io.fourfinanceit.beans.ClientLoginBean;
 import io.fourfinanceit.beans.ClientRegisterBean;
 import io.fourfinanceit.beans.CreateExtensionBean;
 import io.fourfinanceit.beans.LoanApplicationBean;
@@ -30,6 +31,10 @@ import io.fourfinanceit.enums.LoanApplicationResolution;
 import io.fourfinanceit.enums.LoanApplicationStatus;
 
 public class LoanTests extends BaseIntegrationTest {
+
+	private static final String MAX_APP_MANUAL = "Reached max applications (e.g. 3) per day from a single IP";
+
+	private static final String AFTER_MIDNIGHT_MANUAL = "The attempt to take loan is made after 00:00 with max possible amount";
 
 	private static final String PASSWORD = "test12345";
 
@@ -43,27 +48,6 @@ public class LoanTests extends BaseIntegrationTest {
 	
 	@Rule
 	public ExpectedException expectedEx = ExpectedException.none();
-	
-	@Test
-	public void registerClient() {
-		ClientRegisterBean clientRegisterBean = new ClientRegisterBean();
-		clientRegisterBean.setLogin(LOGIN);
-		clientRegisterBean.setPassword(PASSWORD);
-		clientApi.register(clientRegisterBean);
-	}
-	
-	@Test
-	public void registerClientThenLogin() {
-		ClientRegisterBean clientRegisterBean = new ClientRegisterBean();
-		clientRegisterBean.setLogin(LOGIN);
-		clientRegisterBean.setPassword(PASSWORD);
-		clientApi.register(clientRegisterBean);
-		
-		ClientLoginBean clientLoginBean = new ClientLoginBean();
-		clientLoginBean.setLogin(LOGIN);
-		clientLoginBean.setPassword(PASSWORD);
-		clientApi.login(clientLoginBean);
-	}
 	
 	@Test
 	public void applyForLoan() {
@@ -156,7 +140,7 @@ public class LoanTests extends BaseIntegrationTest {
 		loanApplication = loanApi.applyForLoan(applyForLoanBean);
 		assertThat(loanApplication.getStatus(), is(LoanApplicationStatus.OPEN));
 		assertThat(loanApplication.getResolution(), is(LoanApplicationResolution.MANUAL));
-		assertThat(loanApplication.getManualWarnings(), is("Reached max applications (e.g. 3) per day from a single IP"));
+		assertThat(loanApplication.getManualWarnings(), is(MAX_APP_MANUAL));
 	}
 	
 	@Test
@@ -173,7 +157,40 @@ public class LoanTests extends BaseIntegrationTest {
 		LoanApplicationBean loanApplication = loanApi.applyForLoan(applyForLoanBean);
 		assertThat(loanApplication.getStatus(), is(LoanApplicationStatus.OPEN));
 		assertThat(loanApplication.getResolution(), is(LoanApplicationResolution.MANUAL));
-		assertThat(loanApplication.getManualWarnings(), is("The attempt to take loan is made after 00:00 with max possible amount"));
+		assertThat(loanApplication.getManualWarnings(), is(AFTER_MIDNIGHT_MANUAL));
+	}
+	
+	@Test
+	public void applyForLoanMoreThan3TimesInARowAndLastAfterMidnightWithMaxAmount() {
+		ClientRegisterBean clientRegisterBean = new ClientRegisterBean();
+		clientRegisterBean.setLogin(LOGIN);
+		clientRegisterBean.setPassword(PASSWORD);
+		clientApi.register(clientRegisterBean);
+
+		ApplyForLoanBean applyForLoanBean = new ApplyForLoanBean();
+		applyForLoanBean.setAmount(BigDecimal.valueOf(300));
+		applyForLoanBean.setTerm(12);
+		LoanApplicationBean loanApplication = loanApi.applyForLoan(applyForLoanBean);
+		assertThat(loanApplication.getStatus(), is(LoanApplicationStatus.CLOSED));
+		assertThat(loanApplication.getResolution(), is(LoanApplicationResolution.APPROVED));
+		loanApi.payLoan();
+		
+		loanApplication = loanApi.applyForLoan(applyForLoanBean);
+		assertThat(loanApplication.getStatus(), is(LoanApplicationStatus.CLOSED));
+		assertThat(loanApplication.getResolution(), is(LoanApplicationResolution.APPROVED));
+		loanApi.payLoan();
+		
+		loanApplication = loanApi.applyForLoan(applyForLoanBean);
+		assertThat(loanApplication.getStatus(), is(LoanApplicationStatus.CLOSED));
+		assertThat(loanApplication.getResolution(), is(LoanApplicationResolution.APPROVED));
+		loanApi.payLoan();
+		
+		applyForLoanBean.setAmount(BigDecimal.valueOf(500));
+		applyForLoanBean.setWhen(LocalDateTime.now().toLocalDate().atStartOfDay().plusHours(1));
+		loanApplication = loanApi.applyForLoan(applyForLoanBean);
+		assertThat(loanApplication.getStatus(), is(LoanApplicationStatus.OPEN));
+		assertThat(loanApplication.getResolution(), is(LoanApplicationResolution.MANUAL));
+		assertThat(loanApplication.getManualWarnings(), is(Stream.of(AFTER_MIDNIGHT_MANUAL, MAX_APP_MANUAL).collect(joining("\n"))));
 	}
 	
 	@Test

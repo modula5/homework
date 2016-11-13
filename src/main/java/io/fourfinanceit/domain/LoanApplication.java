@@ -15,13 +15,13 @@ import javax.persistence.Entity;
 import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
 import javax.persistence.FetchType;
+import javax.persistence.Index;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 
 import org.springframework.beans.BeanUtils;
 
-import com.google.common.base.Joiner;
 import com.google.common.base.Splitter;
 
 import io.fourfinanceit.beans.LoanApplicationBean;
@@ -29,7 +29,7 @@ import io.fourfinanceit.enums.LoanApplicationResolution;
 import io.fourfinanceit.enums.LoanApplicationStatus;
 
 @Entity
-@Table(name = "loan_applications")
+@Table(name = "loan_applications", indexes = @Index(columnList = "client", name = "client_idx"))
 public class LoanApplication extends BaseEntity {
 	
 	@Column(name = "amount", nullable = false, precision = 10, scale = 2)
@@ -80,7 +80,7 @@ public class LoanApplication extends BaseEntity {
 		resolution = LoanApplicationResolution.MANUAL;
 		List<String> manualWarningsTmp = newArrayList(this.manualWarnings == null ? Collections.emptyList() : Splitter.on("\n").splitToList(this.manualWarnings));
 		manualWarningsTmp.add(manualWarning);
-		this.manualWarnings = Joiner.on("\n").join(manualWarningsTmp);
+		this.manualWarnings = manualWarningsTmp.stream().collect(joining("\n"));
 	}
 	
 	

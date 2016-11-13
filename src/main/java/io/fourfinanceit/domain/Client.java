@@ -9,6 +9,7 @@ import java.util.List;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
+import javax.persistence.Index;
 import javax.persistence.OneToMany;
 import javax.persistence.Table;
 
@@ -16,7 +17,8 @@ import io.fourfinanceit.enums.LoanApplicationStatus;
 import io.fourfinanceit.enums.LoanStatus;
 
 @Entity
-@Table(name = "clients")
+@Table(name = "clients", indexes = { @Index(columnList = "login", name = "login_idx"),
+		@Index(columnList = "login,password", name = "login_password_idx") })
 public class Client extends BaseEntity {
 	
 	@Column(name = "login", unique = true, nullable = false)

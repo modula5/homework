@@ -7,12 +7,14 @@ import java.time.LocalDateTime;
 import java.time.LocalTime;
 
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.annotation.Order;
 import org.springframework.stereotype.Component;
 
 import io.fourfinanceit.beans.ApplyForLoanBean;
 import io.fourfinanceit.domain.LoanApplication;
 
 @Component
+@Order(10)
 public class AfterMidnightRule implements RiskRule {
 	
 	@Value("#{T(io.fourfinanceit.util.Utils).amount('${loan.max.amount}')}")

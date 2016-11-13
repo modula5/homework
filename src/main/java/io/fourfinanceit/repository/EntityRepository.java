@@ -1,6 +1,7 @@
 package io.fourfinanceit.repository;
 
 import java.util.List;
+import java.util.Optional;
 
 import org.hibernate.SessionFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -18,6 +19,11 @@ public class EntityRepository {
 	@Transactional
 	public <E> E get(Long key, Class<E> clazz) {
 		return (E) sessionFactory.getCurrentSession().get(clazz, key);
+	}
+	
+	@Transactional
+	public <E> Optional<E> getOptional(Long key, Class<E> clazz) {
+		return Optional.ofNullable((E) sessionFactory.getCurrentSession().get(clazz, key));
 	}
 	
 	@Transactional

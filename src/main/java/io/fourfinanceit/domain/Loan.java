@@ -14,6 +14,7 @@ import javax.persistence.Entity;
 import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
 import javax.persistence.FetchType;
+import javax.persistence.Index;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
@@ -26,7 +27,7 @@ import io.fourfinanceit.beans.LoanBean;
 import io.fourfinanceit.enums.LoanStatus;
 
 @Entity
-@Table(name = "loans")
+@Table(name = "loans", indexes = @Index(columnList = "client", name = "client_idx"))
 public class Loan extends BaseEntity {
 	
 	@Column(name = "principal", nullable = false, precision = 10, scale = 2)
@@ -59,6 +60,7 @@ public class Loan extends BaseEntity {
 	private Client client;
 	
 	@OneToOne(optional = true, fetch = FetchType.LAZY)
+	@JoinColumn(name = "loan_application")
 	private LoanApplication loanApplication;
 	
 	public void setClient(Client client) {
